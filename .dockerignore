@@ -1,0 +1,8 @@
+node_modules
+dist
+docs
+test
+.git
+.gen
+*.md
+!docker/builder/AGENTS.builder.md

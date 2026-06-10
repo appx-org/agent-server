@@ -1,7 +1,17 @@
 # Outer Builder Container — Design
 
 Date: 2026-06-10
-Status: approved (approach A)
+Status: implemented & verified (2026-06-10, Ubuntu noble arm64 VM, Docker 29)
+
+Acceptance results: all checks in `docker/builder/verify.sh` pass — REST up,
+idempotent project create, session create, nested `podman run`, inner app
+published on :3000 reachable from the host, registry survives container
+restart, no credentials in inner env. Two flags were added to the spawn
+contract during verification: `--cap-add SYS_ADMIN` (newuidmap EPERM on
+uid/gid maps without it) and `--security-opt systempaths=unconfined` +
+`--device /dev/net/tun` (crun sysctl writes and slirp4netns tap device).
+Open item: user-level builder prompt pickup needs one live LLM turn to
+confirm pi context discovery.
 Scope: items 1, 2, and 4 of "What Needs to Be Built" in
 `docs/architecture/important/builder-container-architecture.md`. Item 3
 (project provisioning) already exists (`POST /v1/projects`); item 5

@@ -19,15 +19,25 @@ docker rm -f "$NAME" >/dev/null 2>&1 || true
 
 # Notes on flags (no --privileged):
 #  --device /dev/fuse                    fuse-overlayfs storage for nested podman
+#  --device /dev/net/tun                 slirp4netns/pasta tap device for
+#                                        rootless container networking
 #  seccomp/apparmor unconfined           required for nested user namespaces on
 #                                        stock Docker; a tailored seccomp profile
 #                                        is a follow-up hardening task
+#  --cap-add SYS_ADMIN                   required for newuidmap to write the
+#                                        rootless uid/gid maps (verified: without
+#                                        it nested podman fails with EPERM)
+#  systempaths=unconfined                unmask /proc so crun can set per-container
+#                                        sysctls (ping_group_range) for inner nets
 #  $PODMAN_VOLUME                        keeps inner images/containers across
 #                                        outer restarts
 docker run -d --name "$NAME" \
   --device /dev/fuse \
+  --device /dev/net/tun \
   --security-opt seccomp=unconfined \
   --security-opt apparmor=unconfined \
+  --security-opt systempaths=unconfined \
+  --cap-add SYS_ADMIN \
   -v "$WORKSPACE_VOLUME":/workspace \
   -v "$PODMAN_VOLUME":/home/builder/.local/share/containers \
   -p "$AGENT_PORT":4001 \

@@ -78,9 +78,9 @@ Multi-stage:
      `/home/builder/.config/containers/`: overlay driver with
      `fuse-overlayfs`, network backend left at noble defaults with
      `slirp4netns` as the rootless network fallback (most reliable nested).
-   - builder system prompt baked at `/home/builder/.pi/agent/AGENTS.md`
-     (pi's user-level context discovery applies it to every project; the
-     acceptance run must confirm pickup — fallback is copying it into each
+   - builder system prompt baked at `/usr/local/share/appx-builder/AGENTS.md`
+     and installed at `/workspace/.pi-global/AGENTS.md` on startup (the
+     shared agent dir that runtimes pass to Pi; fallback is copying it into each
      project's `.pi/AGENTS.md` at provisioning time).
    - `ENV WORKSPACE_DIR=/workspace AGENT_SERVER_HOST=0.0.0.0`.
    - `USER builder`, `EXPOSE 4001 3000-3010`, entrypoint below.
@@ -90,7 +90,8 @@ Multi-stage:
 ## entrypoint.sh
 
 1. `mkdir -p "$WORKSPACE_DIR"` (volume may mount empty; agent-server requires
-   the directory to exist).
+   the directory to exist) and install the builder prompt into
+   `$WORKSPACE_DIR/.pi-global/AGENTS.md` if the volume does not already provide one.
 2. `podman info >/dev/null 2>&1 || true` — first-run storage init warmup
    (non-fatal: REST surface must come up even if nesting is broken; the
    failure then surfaces in agent tool calls and logs).
@@ -169,10 +170,10 @@ Environment: new arm64 Ubuntu noble VM `appx-builder-vm` via
   are the main unknown; that is exactly what the VM acceptance run flushes
   out. Fallbacks: `--network slirp4netns` per inner container; switching
   storage to `vfs` (slow but always works) as a last resort.
-- **Prompt discovery**: if pi does not auto-load
-  `/home/builder/.pi/agent/AGENTS.md`, fall back to copying the builder
-  prompt into each project at provisioning (template copy in entrypoint is
-  not possible per-project; the fallback would be an agent-server change —
-  flagged during implementation if needed).
+- **Prompt discovery**: the entrypoint installs the builder prompt into
+  `/workspace/.pi-global/AGENTS.md`, matching the shared `agentDir`
+  (`WORKSPACE_DIR/.pi-global`) that `ProjectRegistry` passes to every runtime.
+  A project-local `.pi/AGENTS.md` can still replace the global default when a
+  project needs specialised instructions.
 - Port range 3000–3010 is a fixed convention for this slice; a port registry
   is an explicit non-goal (limitation 5 in the architecture doc).

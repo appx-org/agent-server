@@ -179,7 +179,7 @@ No host-level work happens for any of this beyond running the outer container. *
 1. ✅ **The outer container's Dockerfile** — built: `docker/builder/Dockerfile` (Ubuntu 24.04 + NodeSource 22 + rootless podman, fuse-overlayfs, builder user with subuid/subgid)
 2. ✅ **A run script** — built: `docker/builder/run.sh` is the canonical spawn contract (`--device /dev/fuse`, relaxed seccomp/apparmor for nested userns, workspace + podman-storage volumes, port forwards, env passthrough)
 3. **Project provisioning logic** — `POST /v1/projects { name }` already creates `WORKSPACE_DIR/<id>/` and registers the project; provisioning is just calling that endpoint (plus any product-specific scaffolding the caller layers on top)
-4. ✅ **System prompt for the builder agent** — built: `docker/builder/AGENTS.builder.md`, baked at `/home/builder/.pi/agent/AGENTS.md` (pi user-level context discovery); prompt-engineering iteration remains open
+4. ✅ **System prompt for the builder agent** — built: `docker/builder/AGENTS.builder.md`, installed at `WORKSPACE_DIR/.pi-global/AGENTS.md` on container startup so runtimes using the shared agent dir can load it; prompt-engineering iteration remains open
 5. **(Optional) An idle-eviction sweep** — if many projects exist and stopping unused `ProjectRuntime`s would free memory; not needed for one admin user
 
 See `docs/superpowers/specs/2026-06-10-outer-builder-container-design.md` for the design and acceptance criteria.

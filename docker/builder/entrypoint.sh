@@ -2,7 +2,15 @@
 set -euo pipefail
 
 # The workspace volume may mount empty; agent-server requires the dir to exist.
-mkdir -p "${WORKSPACE_DIR:-/workspace}"
+workspace_dir="${WORKSPACE_DIR:-/workspace}"
+global_agent_dir="${workspace_dir}/.pi-global"
+builder_agents_template="/usr/local/share/appx-builder/AGENTS.md"
+
+mkdir -p "${global_agent_dir}"
+
+if [ ! -e "${global_agent_dir}/AGENTS.md" ]; then
+  cp "${builder_agents_template}" "${global_agent_dir}/AGENTS.md"
+fi
 
 # First-run rootless storage init is slow; warm it up. Non-fatal: the REST
 # surface must come up even if nesting is broken — the failure then surfaces

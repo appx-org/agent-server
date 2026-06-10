@@ -42,7 +42,8 @@ volumes for `/workspace` and podman storage). Orchestrators should replicate
 its flags. Provider credentials are passed with `-e` and live only in the
 agent-server process — never in inner containers. The builder system prompt
 (`docker/builder/AGENTS.builder.md`) is baked at
-`/home/builder/.pi/agent/AGENTS.md`.
+`/usr/local/share/appx-builder/AGENTS.md` and installed at
+`${WORKSPACE_DIR}/.pi-global/AGENTS.md` when the container starts.
 
 ## Configuration
 
@@ -91,7 +92,8 @@ WORKSPACE_DIR/
   are centralised under `.pi-global/sessions/{id}/`, so they never leak into a
   project's git history and survive independently on the volume.
 - A project with no `.pi/AGENTS.md` starts with no pinned prompt (silent skip);
-  Pi's normal context-file discovery then applies.
+  Pi's normal context-file discovery then applies, including any global
+  `.pi-global/AGENTS.md` installed by the deployment.
 - LLM credentials are injected from env into memory at startup and are **not** the
   job of the volume to persist (`auth.json` holds only non-secret/OAuth state).
 

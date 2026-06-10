@@ -44,9 +44,9 @@ RUN userdel -r ubuntu 2>/dev/null || true \
 COPY docker/builder/containers.conf /home/builder/.config/containers/containers.conf
 COPY docker/builder/storage.conf /home/builder/.config/containers/storage.conf
 
-# Builder-agent system prompt: pi user-level context discovery applies it to
-# every project this server runs.
-COPY docker/builder/AGENTS.builder.md /home/builder/.pi/agent/AGENTS.md
+# Builder-agent system prompt template; the entrypoint installs it into
+# WORKSPACE_DIR/.pi-global/AGENTS.md, the shared agentDir used by runtimes.
+COPY docker/builder/AGENTS.builder.md /usr/local/share/appx-builder/AGENTS.md
 
 # agent-server runtime.
 COPY --from=build /src/dist /app/dist

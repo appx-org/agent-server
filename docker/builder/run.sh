@@ -32,6 +32,7 @@ docker rm -f "$NAME" >/dev/null 2>&1 || true
 #  $PODMAN_VOLUME                        keeps inner images/containers across
 #                                        outer restarts
 docker run -d --name "$NAME" \
+  --restart unless-stopped \
   --device /dev/fuse \
   --device /dev/net/tun \
   --security-opt seccomp=unconfined \

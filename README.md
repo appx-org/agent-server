@@ -24,6 +24,27 @@ WORKSPACE_DIR=/abs/path/to/workspace npm start
 
 Dev with watch: `WORKSPACE_DIR=/abs/path/to/workspace npm run dev`.
 
+## Run it in Docker (outer builder container)
+
+The repo ships the outer builder container from
+[`docs/architecture/important/builder-container-architecture.md`](docs/architecture/important/builder-container-architecture.md):
+agent-server plus **rootless podman**, so builder agents can build and run app
+containers (`podman build` / `podman run`) isolated from the host.
+
+```bash
+./docker/builder/run.sh
+# → agent-server on :4001, inner-app ports 3000-3010 forwarded
+```
+
+`run.sh` is the canonical spawn contract (no `--privileged`; `--device
+/dev/fuse` + relaxed seccomp/apparmor for nested user namespaces; named
+volumes for `/workspace` and podman storage). Orchestrators should replicate
+its flags. Provider credentials are passed with `-e` and live only in the
+agent-server process — never in inner containers. The builder system prompt
+(`docker/builder/AGENTS.builder.md`) is baked at
+`/usr/local/share/appx-builder/AGENTS.md` and installed at
+`${WORKSPACE_DIR}/.pi-global/AGENTS.md` when the container starts.
+
 ## Configuration
 
 All via env vars (see `.env.example`):
@@ -71,7 +92,8 @@ WORKSPACE_DIR/
   are centralised under `.pi-global/sessions/{id}/`, so they never leak into a
   project's git history and survive independently on the volume.
 - A project with no `.pi/AGENTS.md` starts with no pinned prompt (silent skip);
-  Pi's normal context-file discovery then applies.
+  Pi's normal context-file discovery then applies, including any global
+  `.pi-global/AGENTS.md` installed by the deployment.
 - LLM credentials are injected from env into memory at startup and are **not** the
   job of the volume to persist (`auth.json` holds only non-secret/OAuth state).
 
